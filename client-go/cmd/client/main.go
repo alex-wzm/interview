@@ -24,13 +24,13 @@ func init() {
 	f, err := os.Open("local.json")
 	defer f.Close()
 	if err != nil {
-		log.Fatalln("failed to read config file: ", err)
+		log.Fatalln("failed to open config file: ", err)
 	}
 
 	decoder := json.NewDecoder(f)
 	err = decoder.Decode(&config)
 	if err != nil {
-		log.Fatalln("failed to load config file: ", err)
+		log.Fatalln("failed to decode config file: ", err)
 	}
 }
 
