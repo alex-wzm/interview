@@ -2,20 +2,43 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"interview-client/internal/consumer"
 	"log"
+	"os"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var (
+	config configuration
+)
+
+type configuration struct {
+	Server string `json:"Server"`
+}
+
+func init() {
+	f, err := os.Open("local.json")
+	defer f.Close()
+	if err != nil {
+		log.Fatalln("failed to read config file: ", err)
+	}
+
+	decoder := json.NewDecoder(f)
+	err = decoder.Decode(&config)
+	if err != nil {
+		log.Fatalln("failed to load config file: ", err)
+	}
+}
+
 func main() {
 	ctx := context.Background()
-	serviceAddress := "127.0.0.1:8080"
 	conn, err := grpc.DialContext(
 		ctx,
-		serviceAddress,
+		config.Server,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
