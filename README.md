@@ -21,11 +21,14 @@ Currently, the project consists of a Go microservice and a corresponding client 
 
 ### Potential next steps
 
-| Feature                | Description                            |
-| ---------------------- | -------------------------------------- |
-| Authentication         | Authenticate API requests.             |
-| Client SDK             | Manage client-side authentication.     |
-| Configuration          | Inject config values from environment. |
-| Logging                | gRPC middleware, log levels.           |
-| Testing                | Unit tests, integration tests.         |
-| Continuous integration | GitHub Actions for tests.              |
+| Feature/Component      | Description                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Authentication         | Authenticate and authorize API requests.                                                                      |
+| Client SDK             | Manage client-side authentication.                                                                            |
+| Configuration          | Inject config values from environment.                                                                        |
+| Structured Logging     | -                                                                                                            |
+| Testing                | Unit tests, integration tests.                                                                                |
+| Continuous Integration | GitHub Actions for tests.                                                                                    |
+| Front-end client       | A visual interface.                                                                                          |
+| Setup scripts          | Automate onboarding.                                                                                          |
+| Containerization       | Caution: Local Docker setup can be tricky so this should be a nice-to-have, not a requirement to contribute. |
