@@ -8,6 +8,33 @@ There's no restriction on languages, frameworks, or tools. However, do limit req
 
 - [Go 1.18+](https://go.dev/doc/install)
 - [gRPC prerequisites](https://grpc.io/docs/languages/go/quickstart/#prerequisites)
+    <details>
+    <summary>TL;DR</summary>
+
+    1. Install protobuf compiler
+        * Linux
+          ```
+          apt install -y protobuf-compiler
+          ```
+    
+        * Mac
+          ```
+          brew install protobuf
+          ```
+
+        * Windows: [install latest release](https://grpc.io/docs/protoc-installation/#install-pre-compiled-binaries-any-os)
+
+    2. Install Go plugins
+       ```
+       go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28
+       go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+       ```
+
+    3. Add plugins to your path
+       ```
+       export PATH="$PATH:$(go env GOPATH)/bin"
+       ```
+    </details>
 
 ## Setup
 
@@ -19,17 +46,19 @@ Run the setup script to generate protobuf stubs.
 
 ## Workflow
 
+1. Create a [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks) of the repository and clone it locally.
+
+2. Create a [branch](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-and-deleting-branches-within-your-repository)<sup>1</sup> for your changes.
+
+3. Create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) when you are ready for feedback. Include a reasonably detailed description of the changes to help reviewers contextualize their feedback.
+
+4. Once approved, use the [squash and rebase](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#squashing-your-merge-commits)<sup>2</sup> feature to commit your work to `main`.
+
 Practice [Scaled Trunk-Based Development](https://trunkbaseddevelopment.com/#scaled-trunk-based-development) to reduce long-running branches in favor of **short-lived feature branches**.
 
 The trunk is called `main`.
 
 ![scaled trunk-based development workflow](https://trunkbaseddevelopment.com/trunk1c.png)
-
-1. Create a branch with a succinct name describing the intention for that piece of work (e.g. `dark-mode-toggle`<sup>1</sup>). Please do not contribute directly to `main`.
-
-2. Create a [Pull Request](https://docs.github.com/en/pull-requests) (PR) when you are ready for feedback. Include a reasonably detailed description of the changes to help reviewers contextualize their feedback.
-
-3. Once approved, use the [Squash and rebase](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github#squashing-your-merge-commits)<sup>2</sup> feature to commit your work to `main`.
 
 ## Debug
 
