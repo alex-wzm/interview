@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"interview-client/internal/consumer"
 	"log"
 
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+	name := flag.String("name", "Foo-Fighter", "Pass arbitrary string to gRPC call request")
+	flag.Parse()
 	ctx := context.Background()
 	serviceAddress := "127.0.0.1:8080"
 	conn, err := grpc.DialContext(
@@ -23,5 +26,5 @@ func main() {
 		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
 	}
 	consumer := consumer.New(conn)
-	consumer.HelloWorld(ctx)
+	consumer.HelloWorld(ctx, *name)
 }

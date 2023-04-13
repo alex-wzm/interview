@@ -2,8 +2,9 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
@@ -14,7 +15,7 @@ import (
 
 func Start() {
 	address := fmt.Sprintf("localhost:%d", 8080)
-	log.Printf("Starting interview service at %s", address)
+	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
