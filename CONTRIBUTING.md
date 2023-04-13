@@ -2,7 +2,7 @@
 
 This monorepo is an open-ended project that candidates of all skill/career levels can build upon to demonstrate their technical knowledge and abilities. Since the project has no specific functional objectives beyond being the foundation for interviews, you can build anything you can dream of!
 
-There's no restriction on languages, frameworks, or tools. However, do limit required "getting started" steps by being aware of non-automated dependencies to keep the interview easily accessible to all.
+There's no restriction on languages, frameworks, or tools. However, do limit any required "getting started" steps by being aware of non-automatable dependencies to keep the interview easily accessible to all.
 
 ## Requirements
 
@@ -22,7 +22,7 @@ There's no restriction on languages, frameworks, or tools. However, do limit req
           brew install protobuf
           ```
 
-        * Windows: [install latest release](https://grpc.io/docs/protoc-installation/#install-pre-compiled-binaries-any-os)
+        * Windows: use [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or [install latest release](https://grpc.io/docs/protoc-installation/#install-pre-compiled-binaries-any-os)
 
     2. Install Go plugins
        ```
