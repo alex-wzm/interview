@@ -18,6 +18,10 @@ Currently, the project consists of a Go microservice and a corresponding client 
 
 * Unimplemented
 ```
+### Debug gRPC
+Set env variables
+`export GRPC_GO_LOG_VERBOSITY_LEVEL=99`
+`export GRPC_GO_LOG_VERBOSITY_LEVEL=info`
 
 ### Potential next steps
 
