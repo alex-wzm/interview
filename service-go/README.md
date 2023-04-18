@@ -13,3 +13,9 @@ go run cmd/service/service.go
 ```sh
 go test ./...
 ```
+
+## export enviornment
+
+```sh
+source env/local.env
+```

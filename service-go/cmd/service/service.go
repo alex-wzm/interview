@@ -25,14 +25,17 @@ func main() {
 	grpcConfig := config.LoadConfigFromFile(configPath)
 
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
-	log.Printf("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+	var jwtSecret = os.Getenv("JWT_SECRET")
+
+	if jwtSecret == "" {
+		log.Fatalf("error loading secret from envoirnment")
+	}
 
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
@@ -45,7 +48,9 @@ func main() {
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
 
+	log.Printf("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
+
 }
 
 const (
