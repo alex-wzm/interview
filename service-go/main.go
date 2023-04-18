@@ -5,28 +5,32 @@ import (
 	"interview-service/cmd/service"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	log "github.com/sirupsen/logrus"
 )
 
-func init() {
-	log.SetFormatter(&log.JSONFormatter{})
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.InfoLevel)
-}
-
 func main() {
 	loglevel := flag.Int("logLevel", 4, "Useful Log levels: Warn = 3; Info = 4; Debug = 5;")
-	grpcLogs := flag.Bool("grpcLogs", false, "Turn ON/OFF grpc middleware logs")
+	logGrpc := flag.Bool("logGrpc", false, "Turn ON/OFF grpc middleware logs")
 	flag.Parse()
 
-	if *grpcLogs {
-		os.Setenv("GRPC_GO_LOG_VERBOSITY_LEVEL", "99")
-		os.Setenv("GRPC_GO_LOG_SEVERITY_LEVEL", "info")
-	}
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
 
 	if *loglevel >= 0 && *loglevel <= 6 {
 		log.SetLevel(log.Level(*loglevel))
-		log.Debug("Running in Debug mode!")
 	}
+
+	if *logGrpc {
+		err := godotenv.Load("logGrpc.env")
+		if err != nil {
+			log.Infof("Error loading .env file: %+v", err)
+		}
+		log.Debugf("Loaded .env file")
+	}
+	log.Debugf("Severity: %s", os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL"))
+	log.Debugf("Verbosity: %s", os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL"))
+
 	service.Start()
 }

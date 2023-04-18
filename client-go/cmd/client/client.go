@@ -49,11 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
 	}
-<<<<<<< HEAD:client-go/cmd/client/client.go
-
-=======
 	defer conn.Close()
->>>>>>> e3cc5eb (PR feedback changes):client-go/cmd/client/main.go
 	consumer := consumer.New(conn)
 	consumer.HelloWorld(ctx, *name)
 }
