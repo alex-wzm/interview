@@ -6,15 +6,10 @@ import (
 	"net"
 	"os"
 
+	"flag"
 	config "interview-service/config"
 
 	log "github.com/sirupsen/logrus"
-
-	"interview-service/internal/api"
-	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
-
-	"flag"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/joho/godotenv"
@@ -22,6 +17,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
+	"interview-service/internal/api"
+	"interview-service/internal/api/interview"
+	jwt "interview-service/internal/domain/jwt"
 )
 
 const (
@@ -58,8 +56,6 @@ func start() {
 	grpcConfig := config.LoadConfigFromFile(configPath)
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
 
-	log.Infof("Starting interview service at %s", address)
-
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -81,8 +77,8 @@ func start() {
 
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
+	log.Infof("Starting interview service at %s", address)
 
-	log.Printf("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
 
 }
@@ -100,6 +96,31 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
 			log.WithError(err).Debug("JWT validation failed")
+			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+		}
+
+		ctx = context.WithValue(ctx, authHeader, claims)
+
+		return ctx, nil
+	}
+}
+
+const authHeader = "authorization"
+
+// validateJWT parses and validates a bearer jwt
+//
+// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
+func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
+	return func(ctx context.Context) (context.Context, error) {
+		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+		if err != nil {
+			return nil, err
+		}
+
+		claims, err := jwt.ValidateToken(token, secret)
+		if err != nil {
+			//log.Default().Println(err)
+			log.WithError(err).Debug("Token Validation Failed")
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 

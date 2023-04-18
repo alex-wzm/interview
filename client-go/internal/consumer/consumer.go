@@ -2,9 +2,9 @@ package consumer
 
 import (
 	"context"
-	"fmt"
 	"interview-client/internal/api/interview"
-	"log"
+
+	log "github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -29,5 +29,5 @@ func (s *consumer) HelloWorld(ctx context.Context, name string) {
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to hello world"))
 	}
-	fmt.Println(resp)
+	log.Debugf("Client response: %v", resp)
 }
