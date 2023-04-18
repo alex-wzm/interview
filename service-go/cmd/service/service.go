@@ -25,7 +25,7 @@ func main() {
 
 	grpcConfig := config.LoadConfigFromFile(configPath)
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
-	address := fmt.Sprintf("localhost:%d", 8080)
+
 	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
@@ -72,7 +72,8 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-			log.Default().Println(err)
+			// log.Default().Println(err)
+			log.Debugf("Error %v", err)
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
