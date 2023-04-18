@@ -40,3 +40,12 @@ You can pass one or both flags to the executable: logLevel and logGrpc
 5. Stop the service using container ID or name
 ` docker stop stupefied_villani`
 `
+## Get service logs
+Find container ID and Name in step 4
+`docker logs <container ID or Name>`
+
+## Stop the service
+` docker stop <container ID or Name>`
+
+## Send Client message to the Service
+See [Client README](../client-go/README.md)
