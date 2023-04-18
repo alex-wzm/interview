@@ -14,7 +14,14 @@ import (
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"
 
+<<<<<<< HEAD
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+=======
+	"flag"
+	"os"
+
+	"github.com/joho/godotenv"
+>>>>>>> d07b04f (Containerized server)
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
@@ -22,10 +29,35 @@ import (
 )
 
 func main() {
+	loglevel := flag.Int("logLevel", 4, "Useful Log levels: Warn = 3; Info = 4; Debug = 5;")
+	logGrpc := flag.Bool("logGrpc", false, "Turn ON/OFF grpc middleware logs")
+	flag.Parse()
 
 	grpcConfig := config.LoadConfigFromFile(configPath)
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
 
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetOutput(os.Stdout)
+
+	if *loglevel >= 0 && *loglevel <= 6 {
+		log.SetLevel(log.Level(*loglevel))
+	}
+
+	if *logGrpc {
+		err := godotenv.Load("logGrpc.env")
+		if err != nil {
+			log.Infof("Error loading .env file: %+v", err)
+		}
+		log.Debugf("Loaded .env file")
+		log.Debugf("Severity: %s", os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL"))
+		log.Debugf("Verbosity: %s", os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL"))
+	}
+
+	start()
+}
+
+func start() {
+	address := fmt.Sprintf("localhost:%d", 8080)
 	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
