@@ -21,8 +21,11 @@ func New(c *grpc.ClientConn) *consumer {
 	}
 }
 
-func (s *consumer) HelloWorld(ctx context.Context) {
-	resp, err := s.client.HelloWorld(context.Background(), &interview.HelloWorldRequest{})
+func (s *consumer) HelloWorld(ctx context.Context, name string) {
+	req := &interview.HelloWorldRequest{
+		Name: name,
+	}
+	resp, err := s.client.HelloWorld(context.Background(), req)
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to hello world"))
 	}

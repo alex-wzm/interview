@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 
-	"log"
-	"net"
-
 	config "interview-service/config"
+
+	log "github.com/sirupsen/logrus"
+
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"
@@ -23,8 +24,9 @@ import (
 func main() {
 
 	grpcConfig := config.LoadConfigFromFile(configPath)
-
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+	address := fmt.Sprintf("localhost:%d", 8080)
+	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
