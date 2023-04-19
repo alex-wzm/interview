@@ -11,20 +11,29 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"interview-service/internal/api"
+	"interview-service/internal/api/interview"
+	jwt "interview-service/internal/domain/jwt"
+
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+
 	"github.com/joho/godotenv"
+
+	"interview-service/internal/api"
+	"interview-service/internal/api/interview"
+	jwt "interview-service/internal/domain/jwt"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
-	"interview-service/internal/api"
-	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
 )
 
+type authHeader string
+
 const (
-	authHeader = "authorization"
-	configPath = "./config/grpc.json"
+	auth_header = authHeader("authorization")
+	configPath  = "./config/grpc.json"
 )
 
 func main() {
@@ -79,8 +88,8 @@ func start() {
 	reflection.Register(grpcServer)
 	log.Infof("Starting interview service at %s", address)
 
+	log.Printf("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
-
 }
 
 // validateJWT parses and validates a bearer jwt
@@ -99,32 +108,7 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
-		ctx = context.WithValue(ctx, authHeader, claims)
-
-		return ctx, nil
-	}
-}
-
-const authHeader = "authorization"
-
-// validateJWT parses and validates a bearer jwt
-//
-// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
-
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			//log.Default().Println(err)
-			log.WithError(err).Debug("Token Validation Failed")
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
-
-		ctx = context.WithValue(ctx, authHeader, claims)
+		ctx = context.WithValue(ctx, auth_header, claims)
 
 		return ctx, nil
 	}
