@@ -29,5 +29,6 @@ func (s *consumer) HelloWorld(ctx context.Context, name string) {
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to hello world"))
 	}
-	log.Debugf("Client response: %v", resp)
+	log.Infof("Client request: %v", req)
+	log.Infof("Service response: %v", resp)
 }

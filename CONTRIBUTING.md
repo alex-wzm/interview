@@ -66,10 +66,10 @@ The trunk is called `main`.
 
 ```sh
 # describe the service API
-grpcurl -plaintext localhost:8080 describe InterviewService
+grpcurl -plaintext localhost:50051 describe InterviewService
 
 # make an API call
-grpcurl -plaintext -d '{"Name": "Obi-Wan"}' localhost:8080 InterviewService/HelloWorld
+grpcurl -plaintext -d '{"Name": "Obi-Wan"}' localhost:50051 InterviewService/HelloWorld
 ```
 
 #### Go runtime error: _package your_pkg is not in GOROOT_

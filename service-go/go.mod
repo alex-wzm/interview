@@ -2,12 +2,13 @@ module interview-service
 
 go 1.19
 
+require google.golang.org/grpc v1.51.0
+
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/sirupsen/logrus v1.9.0
-	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 )
 

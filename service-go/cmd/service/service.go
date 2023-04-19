@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"flag"
-	config "interview-service/config"
+	"interview-service/config"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,9 +25,18 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+type authHeader string
+
+const (
+	// Attn: the ctx key is type authHeader, not string
+	auth_header = authHeader("authorization")
+	configPath  = "./config/grpc.json"
+)
+
 func main() {
 	loglevel := flag.Int("logLevel", 4, "Useful Log levels: Warn = 3; Info = 4; Debug = 5;")
 	logGrpc := flag.Bool("logGrpc", false, "Turn ON/OFF grpc middleware logs")
+	enableAuth := flag.Bool("enableAuth", false, "Turn ON/OFF JWT authentication")
 	flag.Parse()
 
 	log.SetFormatter(&log.JSONFormatter{})
@@ -38,56 +47,52 @@ func main() {
 	}
 
 	if *logGrpc {
-		err := godotenv.Load("logGrpc.env")
+		err := godotenv.Load("env/logGrpc.env")
 		if err != nil {
 			log.Infof("Error loading .env file: %+v", err)
 		}
-		log.Debugf("Loaded .env file")
+		log.Debugf("Loaded .env files")
 		log.Debugf("Severity: %s", os.Getenv("GRPC_GO_LOG_SEVERITY_LEVEL"))
 		log.Debugf("Verbosity: %s", os.Getenv("GRPC_GO_LOG_VERBOSITY_LEVEL"))
 	}
 
-	grpcConfig := config.LoadConfigFromFile(configPath)
-	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
-
-	start(address)
+	start(*enableAuth)
 }
 
-func start(address string) {
-	log.WithFields(log.Fields{"address": address}).Info("Starting interview service")
+func start(enableAuth bool) {
+	grpcConfig, err := config.LoadConfigFromFile(configPath)
+	if err != nil {
+		log.WithError(err).Fatalf("Failed loading grpc config")
+	}
+	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.WithError(err).Fatalf("failed to listen")
 	}
 
+	err = godotenv.Load("env/local.env")
+	if err != nil {
+		log.WithError(err).Fatalf("Error loading local.env file")
+	}
+	log.Debugf("Loaded env/local.env")
 	var jwtSecret = os.Getenv("JWT_SECRET")
 
-	if jwtSecret == "" {
-		log.Fatalf("error loading secret from envoirnment")
+	var opts []grpc.ServerOption
+	if enableAuth {
+		opts = []grpc.ServerOption{
+			grpc.UnaryInterceptor(
+				grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
+			),
+		}
 	}
-
-	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
-		),
-	}
-
 	grpcServer := grpc.NewServer(opts...)
 
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
-
-	log.Printf("Starting interview service at %s", address)
+	log.Infof("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
 }
-
-type authHeader string
-
-const (
-	auth_header = authHeader("authorization")
-	configPath  = "./config/grpc.json"
-)
 
 // validateJWT parses and validates a bearer jwt
 //
@@ -101,13 +106,11 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-			// log.Default().Println(err)
-			log.WithError(err).Debugf("Token validation failed")
+			log.WithError(err).Debug("JWT validation failed")
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
 		ctx = context.WithValue(ctx, auth_header, claims)
-
 		return ctx, nil
 	}
 }
