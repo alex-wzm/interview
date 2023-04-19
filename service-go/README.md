@@ -48,3 +48,25 @@ Find container ID and Name in step 4
 ## Send Client message to the Service
 See [Client README](../client-go/README.md)
 
+```sh
+source env/local.env
+```
+# Containerize (Docker)
+## Prerequisites
+- Golang installation
+- Docker installation
+## Build service docker image
+1. Run the build script.
+`./build.sh`
+2. Check the docker image, it's tagged interview-service
+`docker images`
+## Run docker container
+3. Run the run script and pass the image ID found in step 2
+`./run.sh 446bd644965b`
+You can pass one or both flags to the executable: logLevel and logGrpc
+`./run.sh  dcd4c4c0be76 -logLevel=5 -logGrpc`
+4. Verify the docker container is running
+`docker ps`
+5. Stop the service using container ID or name
+` docker stop stupefied_villani`
+`

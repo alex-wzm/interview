@@ -24,6 +24,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	authHeader = "authorization"
+	configPath = "./config/grpc.json"
+)
+
 func main() {
 	loglevel := flag.Int("logLevel", 4, "Useful Log levels: Warn = 3; Info = 4; Debug = 5;")
 	logGrpc := flag.Bool("logGrpc", false, "Turn ON/OFF grpc middleware logs")
@@ -52,6 +57,7 @@ func main() {
 func start() {
 	grpcConfig := config.LoadConfigFromFile(configPath)
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+
 	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
@@ -81,11 +87,6 @@ func start() {
 
 }
 
-const (
-	authHeader = "authorization"
-	configPath = "./config/grpc.json"
-)
-
 // validateJWT parses and validates a bearer jwt
 //
 // TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
@@ -98,13 +99,7 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-<<<<<<< HEAD
-			//log.Default().Println(err)
 			log.WithError(err).Debug("JWT validation failed")
-=======
-			// log.Default().Println(err)
-			log.Debugf("Error %v", err)
->>>>>>> 94725c2 (PR feedback changes)
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
