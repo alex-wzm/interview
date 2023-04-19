@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 
-	"net"
+	config "interview-service/config"
 
 	log "github.com/sirupsen/logrus"
 
-	config "interview-service/config"
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"

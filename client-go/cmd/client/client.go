@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"interview-client/internal/consumer"
 	"log"
 	"os"
@@ -33,6 +34,8 @@ func loadConfig() (c config) {
 }
 
 func main() {
+	name := flag.String("name", "Foo-Fighter", "Pass arbitrary string to gRPC call request")
+	flag.Parse()
 	ctx := context.Background()
 
 	config := loadConfig()
@@ -48,6 +51,5 @@ func main() {
 	}
 
 	consumer := consumer.New(conn)
-
-	consumer.HelloWorld(ctx)
+	consumer.HelloWorld(ctx, *name)
 }
