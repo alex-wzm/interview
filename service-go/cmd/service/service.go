@@ -3,11 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"net"
 
+<<<<<<< HEAD
 	log "github.com/sirupsen/logrus"
 
+=======
+	config "interview-service/config"
+>>>>>>> 5f477ac (grpc config added)
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"
@@ -52,14 +57,21 @@ func start() {
 	address := fmt.Sprintf("localhost:%d", 8080)
 	log.Infof("Starting interview service at %s", address)
 
+	grpcConfig := config.LoadConfigFromFile(configPath)
+
+	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+	log.Printf("Starting interview service at %s", address)
+
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte("secret"))),
+			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
 		),
 	}
 
@@ -71,7 +83,10 @@ func start() {
 	grpcServer.Serve(lis)
 }
 
-const authHeader = "authorization"
+const (
+	authHeader = "authorization"
+	configPath = "./config/grpc.json"
+)
 
 // validateJWT parses and validates a bearer jwt
 //
