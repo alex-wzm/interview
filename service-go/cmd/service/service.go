@@ -3,24 +3,24 @@ package main
 import (
 	"context"
 	"fmt"
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	jwtValidator "interview-service/internal/domain/jwt"
-	"log"
+
 	"net"
 
 	log "github.com/sirupsen/logrus"
 
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
+	jwt "interview-service/internal/domain/jwt"
 
 	"flag"
 	"os"
 
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -57,32 +57,41 @@ func start() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var opts []grpc.ServerOption
-	{
-		grpc.UnaryInterceptor(grpc_auth.UnaryServerInterceptor(AuthFunc([]byte("secret"))))
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(
+			grpc_auth.UnaryServerInterceptor(validateJWT([]byte("secret"))),
+		),
 	}
 
 	grpcServer := grpc.NewServer(opts...)
+
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
+
 	grpcServer.Serve(lis)
 }
 
 const authHeader = "authorization"
 
-func AuthFunc(secret []byte) func(ctx context.Context) (context.Context, error) {
+// validateJWT parses and validates a bearer jwt
+//
+// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
+func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
 	return func(ctx context.Context) (context.Context, error) {
 		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
 		if err != nil {
 			return nil, err
 		}
 
-		claims, err := jwtValidator.ValidateToken(token, secret)
+		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-			log.Default().Println(err)
+			//log.Default().Println(err)
+			log.WithError(err).Debug("JWT validation failed")
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
+
 		ctx = context.WithValue(ctx, authHeader, claims)
+
 		return ctx, nil
 	}
 }
