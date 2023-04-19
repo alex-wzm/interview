@@ -34,7 +34,7 @@ func loadConfig() (c config) {
 }
 
 func main() {
-	name := flag.String("name", "Foo-Fighter", "Pass arbitrary string to gRPC call request")
+	name := flag.String("name", "Foo Fighters", "Pass arbitrary string to gRPC call request")
 	flag.Parse()
 	ctx := context.Background()
 
@@ -49,7 +49,11 @@ func main() {
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
 	}
+<<<<<<< HEAD:client-go/cmd/client/client.go
 
+=======
+	defer conn.Close()
+>>>>>>> e3cc5eb (PR feedback changes):client-go/cmd/client/main.go
 	consumer := consumer.New(conn)
 	consumer.HelloWorld(ctx, *name)
 }

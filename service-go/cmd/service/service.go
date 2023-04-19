@@ -98,8 +98,13 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
+<<<<<<< HEAD
 			//log.Default().Println(err)
 			log.WithError(err).Debug("JWT validation failed")
+=======
+			// log.Default().Println(err)
+			log.Debugf("Error %v", err)
+>>>>>>> 94725c2 (PR feedback changes)
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
