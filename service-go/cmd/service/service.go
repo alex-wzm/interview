@@ -7,18 +7,14 @@ import (
 
 	"net"
 
-<<<<<<< HEAD
 	log "github.com/sirupsen/logrus"
 
-=======
 	config "interview-service/config"
->>>>>>> 5f477ac (grpc config added)
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"
 
 	"flag"
-	"os"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"github.com/joho/godotenv"
@@ -54,20 +50,20 @@ func main() {
 }
 
 func start() {
-	address := fmt.Sprintf("localhost:%d", 8080)
-	log.Infof("Starting interview service at %s", address)
-
 	grpcConfig := config.LoadConfigFromFile(configPath)
-
 	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
-	log.Printf("Starting interview service at %s", address)
+	log.Infof("Starting interview service at %s", address)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+	var jwtSecret = os.Getenv("JWT_SECRET")
+
+	if jwtSecret == "" {
+		log.Fatalf("error loading secret from envoirnment")
+	}
 
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
@@ -80,7 +76,9 @@ func start() {
 	interview.RegisterInterviewServiceServer(grpcServer, api.New())
 	reflection.Register(grpcServer)
 
+	log.Printf("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
+
 }
 
 const (
