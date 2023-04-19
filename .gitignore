@@ -1,3 +1,6 @@
 .vsode
-*pb.go
 *.idea
+*pb.go
+
+client
+service

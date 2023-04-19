@@ -7,7 +7,7 @@ You can pass the log level to the service executable with a flag `logLevel`, def
 You can turn ON grpc middleware logging with a boolean flag `logGrpc`, default OFF 
 
 ```sh
-go run main.go  -logLevel=5 -logGrpc
+go run cmd/service/service.go -logLevel=5 -logGrpc
 ```
 
 ## Test
