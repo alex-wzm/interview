@@ -22,8 +22,16 @@ jobs:
           go-version: 1.19
           cache: false
 
-      - name: golangci-lint
+      - name: golangci-lint on client
         uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: client-go
+
+      - name: golangci-lint on service
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: service-go
+
 
 
   build:
@@ -38,6 +46,20 @@ jobs:
       uses: actions/setup-go@v5
       with:
           go-version: 1.19
+    
+    - name: Install ProtoBuf compiler
+      run: |
+        sudo apt update
+        sudo apt install -y protobuf-compiler
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
+
+    - name: Compile Protos
+      run: |
+        protoc --go_out=. --go_opt=paths=source_relative \
+        --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+        -I./gen ./gen/*.proto
 
     - name: Build Client
       run: go build -v ./client-go/...
