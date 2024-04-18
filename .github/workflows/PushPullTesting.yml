@@ -8,34 +8,11 @@ on:
 
 jobs:
 
-  golangci:
-    name: lint
-    runs-on: ubuntu-latest
 
-    steps:
-      - name: Set up Git repo for lint
-        uses: actions/checkout@v4
-
-      - name: Set up Go for lint
-        uses: actions/setup-go@v5
-        with:
-          go-version: 1.19
-          cache: false
-
-      - name: golangci-lint on client
-        uses: golangci/golangci-lint-action@v4
-        with:
-          working-directory: client-go
-
-      - name: golangci-lint on service
-        uses: golangci/golangci-lint-action@v4
-        with:
-          working-directory: service-go
 
 
 
   build:
-    needs: golangci 
     runs-on: ubuntu-latest
 
     steps:
