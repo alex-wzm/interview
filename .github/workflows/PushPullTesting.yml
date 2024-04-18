@@ -1,0 +1,49 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ main, feature ]
+  pull_request:
+    branches: [ main, feature ]
+
+jobs:
+
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Git repo for lint
+        uses: actions/checkout@v4
+
+      - name: Set up Go for lint
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.19
+          cache: false
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+
+
+  build:
+    needs: golangci 
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Git repo for build and test
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+          go-version: 1.19
+
+    - name: Build Client
+      run: go build -v ./client-go/...
+
+    - name: Build Service
+      run: go build -v ./service-go/...
+
+    - name: Test Greeter
+      run: go test -v ./service-go/internal/domain/greeter/...
