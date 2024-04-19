@@ -17,7 +17,7 @@ type testCase struct {
 
 // TestHelloWorld uses a table-driven test to check the behavior of the HelloWorld function.
 func TestHelloWorld(t *testing.T) {
-	c := consumer.GetConsumer() // This assumes that you have a method to get the consumer instance.
+	c := consumer.GetConsumer()
 
 	tests := []testCase{
 		{
