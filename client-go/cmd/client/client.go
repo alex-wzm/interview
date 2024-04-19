@@ -79,7 +79,8 @@ func getToken(ctx context.Context, c config) string {
 	log.Printf("Success!")
 
 	authServer := consumer.NewAuthorize(conn)
-	return authServer.Authorize(ctx, c.Username, c.Password, 10)
+	return authServer.Authorize(ctx, "stew", c.Password, 10)
+	//return authServer.Authorize(ctx, c.Username, c.Password, 10)
 
 
 }

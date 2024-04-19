@@ -5,6 +5,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"context"
 	"interview-auth/internal/api/interview/auth"
+	"interview-auth/internal/repos/secrets"
 )
 
 // JWTClaims represents the custom claims for our JWT
@@ -38,15 +39,22 @@ func GenerateToken(username string, expiresIn time.Duration, secret []byte) (str
 
 type server struct {
 	auth.UnimplementedAuthServiceServer
+	repo  secrets.SecretRepo
 }
 
-func New() *server {
-	return &server{}
+func New(repo secrets.SecretRepo) *server {
+	return &server{repo: repo}
+
 }
 
 func (s *server) Authorize(ctx context.Context, r *auth.AuthRequest) (*auth.JWTResponse, error) {
 	// TODO: authenticate username/password
-	token, err  := GenerateToken(r.Username, time.Second * time.Duration(r.Ttl), []byte("secret"))
+
+	secret, err:= s.repo.GetSecret(r.Username)
+	if err != nil {
+		return &auth.JWTResponse{}, err
+	}
+	token, err  := GenerateToken(r.Username, time.Second * time.Duration(r.Ttl), []byte(secret))
 
 	return &auth.JWTResponse{
 		Token: token,

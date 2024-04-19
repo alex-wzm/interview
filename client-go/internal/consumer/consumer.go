@@ -41,7 +41,7 @@ func NewAuthorize(c *grpc.ClientConn) *authorize {
 	}
 }
 
-func (s *authorize) Authorize(ctx context.Context, username string, password string, ttl int64) string {
+func (s authorize) Authorize(ctx context.Context, username string, password string, ttl int64) string {
 	resp, err := s.client.Authorize(ctx, &auth.AuthRequest{
 		Username: username,
 		Password: password,
