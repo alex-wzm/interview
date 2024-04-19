@@ -1,8 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
 
-cd "gen/proto"
 echo "📁 Generating protocol buffers from gen/proto..."
-./generate.sh
-cd "../.."
+( cd "gen/proto" && ./generate.sh )
 
 echo "🏁 Setup complete!"

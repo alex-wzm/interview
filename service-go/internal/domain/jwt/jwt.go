@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"time"
+
 )
 
 // JWTClaims represents the custom claims for our JWT
@@ -19,29 +20,6 @@ type JWTlib interface {
 
 var ErrInvalidToken = errors.New("invalid token")
 
-// GenerateToken generates a JWT token with the provided username and expiration time
-func GenerateToken(username string, expiresIn time.Duration, secret []byte) (string, error) {
-	// Create a new token object
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	// Set the claims for the token
-	claims := JWTClaims{
-		username,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(expiresIn).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
-	}
-	token.Claims = claims
-
-	// Sign the token with the provided secret
-	tokenString, err := token.SignedString(secret)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
-}
 
 // ValidateToken validates a JWT token with the provided secret and returns the claims
 func ValidateToken(tokenString string, secret []byte) (*JWTClaims, error) {

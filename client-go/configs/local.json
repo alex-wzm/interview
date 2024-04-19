@@ -1,3 +1,7 @@
 {
-  "Server": "127.0.0.1:8080"
+  "Server": "127.0.0.1:8080",
+  "AuthServer": "127.0.0.1:8081",
+  "Username": "Stew",
+  "Password": "abc123"
+
 }

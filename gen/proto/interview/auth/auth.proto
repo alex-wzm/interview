@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "./interview/auth";
+
+service AuthService {
+	rpc Authorize(AuthRequest) returns (JWTResponse) {}
+}
+
+message AuthRequest {
+    string Username = 1;
+    string Password = 2;
+	int64 Ttl = 3;
+}
+
+message JWTResponse{
+	string Token = 1;
+}
