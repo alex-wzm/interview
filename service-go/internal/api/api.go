@@ -15,9 +15,10 @@ func New() *server {
 	return &server{}
 }
 
+// HelloWorld Implementation - calls Greet function to send greeting message
 func (s *server) HelloWorld(ctx context.Context, r *interview.HelloWorldRequest) (*interview.HelloWorldResponse, error) {
-	greeting := greeter.Greet(r.GetName())
-
+	username, _ := ctx.Value("username").(string)
+	greeting := greeter.Greet(username)
 	return &interview.HelloWorldResponse{
 		Greeting: greeting,
 	}, nil

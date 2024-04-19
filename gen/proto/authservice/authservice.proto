@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "./authservice";
+
+// The AuthService definition for login.
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc ValidateJWT(ValidateRequest) returns (ValidateResponse);
+}
+
+// The request message containing user credentials.
+message LoginRequest {
+  string username = 1;
+}
+
+// The response message containing the JWT token.
+message LoginResponse {
+  string token = 1;  // JWT token
+}
+
+// The request message containing for validation of token.
+message ValidateRequest {
+  string token = 1;
+}
+
+// Response message for validation of token
+message ValidateResponse {
+    bool valid = 1; //check validity
+    string username =2;
+}

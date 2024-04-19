@@ -2,11 +2,12 @@ package jwtValidator
 
 import (
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
-// JWTClaims represents the custom claims for our JWT
+// JWTClaims represents the custom claims for JWT
 type JWTClaims struct {
 	Username string `json:"username"`
 	jwt.StandardClaims

@@ -4,10 +4,6 @@ import (
 	"context"
 	"fmt"
 	"interview-client/internal/api/interview"
-	"log"
-
-	"github.com/pkg/errors"
-	"google.golang.org/grpc"
 )
 
 type consumer struct {
@@ -15,16 +11,19 @@ type consumer struct {
 	client interview.InterviewServiceClient
 }
 
-func New(c *grpc.ClientConn) *consumer {
+// Create a new instance for consumer
+func New(client interview.InterviewServiceClient) *consumer {
 	return &consumer{
-		client: interview.NewInterviewServiceClient(c),
+		client: client,
 	}
 }
 
-func (s *consumer) HelloWorld(ctx context.Context) {
+// Calls HelloWorld funciton from interview-service
+func (s *consumer) ClientHelloWorld(ctx context.Context) error {
 	resp, err := s.client.HelloWorld(context.Background(), &interview.HelloWorldRequest{})
 	if err != nil {
-		log.Fatalln(errors.Wrap(err, "failed to hello world"))
+		return err
 	}
 	fmt.Println(resp)
+	return nil
 }

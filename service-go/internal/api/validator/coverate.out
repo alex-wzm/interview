@@ -1,0 +1,10 @@
+mode: set
+interview-service/internal/api/validator/validator.go:20.93,24.2 1 1
+interview-service/internal/api/validator/validator.go:27.99,28.60 1 1
+interview-service/internal/api/validator/validator.go:28.60,32.17 4 1
+interview-service/internal/api/validator/validator.go:32.17,34.4 1 0
+interview-service/internal/api/validator/validator.go:36.3,37.17 2 1
+interview-service/internal/api/validator/validator.go:37.17,39.4 1 1
+interview-service/internal/api/validator/validator.go:41.3,41.18 1 1
+interview-service/internal/api/validator/validator.go:41.18,43.4 1 0
+interview-service/internal/api/validator/validator.go:45.3,47.18 2 1
