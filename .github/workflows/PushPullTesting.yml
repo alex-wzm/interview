@@ -32,7 +32,7 @@ jobs:
         echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
 
     - name: Compile Protos
-      run: ./gen/proto/generate.sh
+      run: ./setup.sh
 
     - name: Build Client
       run: go build -v ./client-go/...
