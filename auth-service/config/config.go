@@ -9,12 +9,11 @@ import (
 type (
 	GrpcConfig struct {
 		ServerHost   string `json:"server_host" default:"localhost"`
-		UnsecurePort string `json:"unsecure_port" default:"8080"`
-		AuthServer   string `json:"AuthServer" default:"127.0.0.1:9000"`
+		UnsecurePort string `json:"unsecure_port" default:"9000"`
 	}
 )
 
-// Function to load configuarations from config file
+// load configurations from Config file
 func LoadConfigFromFile(path string) *GrpcConfig {
 	var cfg GrpcConfig
 	val, err := os.ReadFile(path)

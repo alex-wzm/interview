@@ -3,21 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"log"
 	"net"
 
 	config "interview-service/config"
 	"interview-service/internal/api"
+	"interview-service/internal/api/authservice"
 	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
+	"interview-service/internal/api/validator"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -31,21 +31,37 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
+	ctx := context.Background()
 
-	if jwtSecret == "" {
-		log.Fatalf("error loading secret from envoirnment")
+	//Establish Connection to Auth server
+	AuthConn, err := grpc.DialContext(
+		ctx,
+		grpcConfig.AuthServer,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
+	if err != nil {
+		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
+	}
+	defer AuthConn.Close()
+
+	// Initialize AuthServiceClient
+	authClient, err := validator.NewAuthServiceClient(authservice.NewAuthServiceClient(AuthConn))
+	if err != nil {
+		log.Fatalf("Failed to create auth service client: %v", err)
 	}
 
+	//UnaryServerInterceptor is to validate each request before executing the HelloWorld
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
+			grpc_auth.UnaryServerInterceptor(authClient.ValidateJWTToken()),
 		),
 	}
 
+	//Create gRPC server
 	grpcServer := grpc.NewServer(opts...)
-
-	interview.RegisterInterviewServiceServer(grpcServer, api.New())
+	interviewService := api.New()
+	interview.RegisterInterviewServiceServer(grpcServer, interviewService)
 	reflection.Register(grpcServer)
 
 	log.Printf("Starting interview service at %s", address)
@@ -54,28 +70,5 @@ func main() {
 }
 
 const (
-	authHeader = "authorization"
-	configPath = "./config/grpc.json"
+	configPath = "../../config/grpc.json"
 )
-
-// validateJWT parses and validates a bearer jwt
-//
-// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
-
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			log.Default().Println(err)
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
-
-		ctx = context.WithValue(ctx, authHeader, claims)
-
-		return ctx, nil
-	}
-}
