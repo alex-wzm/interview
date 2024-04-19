@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 
+	"interview-client/internal/api/interview"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -49,5 +51,8 @@ func main() {
 
 	consumer := consumer.New(conn)
 
-	consumer.HelloWorld(ctx)
+	//blank req just to run w/o crashes
+	request := &interview.HelloWorldRequest{Name: ""}
+
+	consumer.HelloWorld(ctx, request)
 }
