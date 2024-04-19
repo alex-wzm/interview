@@ -54,10 +54,7 @@ jobs:
         echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
 
     - name: Compile Protos
-      run: |
-        protoc --go_out=. --go_opt=paths=source_relative \
-        --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-        -I./gen ./gen/proto/interview/*.proto
+      run: ./gen/proto/generate.sh
 
     - name: Build Client
       run: go build -v ./client-go/...
