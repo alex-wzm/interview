@@ -70,7 +70,6 @@ func validateJWT(secret []byte) func(ctx context.Context) (context.Context, erro
 
 		claims, err := jwt.ValidateToken(token, secret)
 		if err != nil {
-			log.Default().Println(err)
 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
 		}
 
