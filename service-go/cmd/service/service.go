@@ -55,7 +55,7 @@ func main() {
 
 const (
 	authHeader = "authorization"
-	configPath = "./config/grpc.json"
+	configPath = "../config/grpc.json"
 )
 
 // validateJWT parses and validates a bearer jwt

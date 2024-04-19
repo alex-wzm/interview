@@ -1,0 +1,81 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ main, feature ]
+  pull_request:
+    branches: [ main, feature ]
+
+jobs:
+
+  build:
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up Git repo for build and test
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+          go-version: 1.19
+    
+    - name: Install ProtoBuf compiler
+      run: |
+        sudo apt update
+        sudo apt install -y protobuf-compiler
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+        echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
+
+    - name: Compile Protos
+      run: ./setup.sh
+
+    - name: Build Client
+      run: go build -v ./client-go/...
+
+    - name: Build Service
+      run: go build -v ./service-go/...
+
+    - name: Test Greeter
+      run: go test -v ./service-go/internal/domain/greeter/...
+
+    - name: Integration test Hello World
+      run: go test -v ./client-go/internal/consumer/...
+
+  golangci:
+    needs: build 
+    name: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Git repo for lint
+        uses: actions/checkout@v4
+
+      - name: Set up Go for lint
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.19
+          cache: false
+
+      - name: Install ProtoBuf compiler
+        run: |
+          sudo apt update
+          sudo apt install -y protobuf-compiler
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          echo "${{ github.workspace }}/go/bin" >> $GITHUB_PATH
+
+      - name: Compile Protos
+        run: ./setup.sh
+
+      - name: golangci-lint on client
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: client-go
+
+      - name: golangci-lint on service
+        uses: golangci/golangci-lint-action@v4
+        with:
+          working-directory: service-go

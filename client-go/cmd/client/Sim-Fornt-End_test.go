@@ -1,15 +1,14 @@
-package main
+package main_test
 
 import (
 	"context"
 	"encoding/json"
-	"interview-client/internal/consumer"
 	"log"
 	"os"
+	"testing"
 
-	"interview-client/internal/api/interview"
+	"interview-client/internal/consumer"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -34,25 +33,27 @@ func loadConfig() (c config) {
 	return c
 }
 
-func main() {
+func TestMain(m *testing.M) {
 	ctx := context.Background()
+	conn, err := setupTestConnection(ctx)
+	if err != nil {
+		log.Fatalln("failed to connect to test service:", err)
+	}
+	defer conn.Close()
 
+	consumer.New(conn)
+
+	os.Exit(m.Run())
+}
+
+// TODO add JWT auth so that the client can properly run without issues in the unary interceptor.
+func setupTestConnection(ctx context.Context) (*grpc.ClientConn, error) {
 	config := loadConfig()
 
-	conn, err := grpc.DialContext(
+	return grpc.DialContext(
 		ctx,
 		config.Server,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
-	if err != nil {
-		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
-	}
-
-	consumer := consumer.New(conn)
-
-	//blank req just to run w/o crashes
-	request := &interview.HelloWorldRequest{Name: ""}
-
-	consumer.HelloWorld(ctx, request)
 }

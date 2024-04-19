@@ -1,0 +1,27 @@
+name: Security Scan
+
+on:
+    push:
+        branches: [ main, feature ]
+    pull_request:
+        branches: [ main, feature ]
+    
+jobs:
+    security-scan:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repo branch
+              uses: actions/checkout@v4
+            
+            - name: Install Nmap
+              run: sudo apt-get install -y nmap
+
+            - name: Run and save Nmap scan
+              run: nmap -v -sV localhost > nmap-results.txt
+
+            - name: Upload Results
+              uses: actions/upload-artifact@v4
+              with:
+                name: nmap-results
+                path: nmap-results.txt
+

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"interview-client/internal/api/interview"
 	"log"
+	"sync"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -12,19 +13,33 @@ import (
 
 type consumer struct {
 	interview.UnimplementedInterviewServiceServer
-	client interview.InterviewServiceClient
+	Client interview.InterviewServiceClient
 }
+
+var (
+	once     sync.Once
+	instance *consumer
+)
 
 func New(c *grpc.ClientConn) *consumer {
-	return &consumer{
-		client: interview.NewInterviewServiceClient(c),
-	}
+	once.Do(func() {
+		instance = &consumer{
+			Client: interview.NewInterviewServiceClient(c),
+		}
+	})
+	return instance
 }
 
-func (s *consumer) HelloWorld(ctx context.Context) {
-	resp, err := s.client.HelloWorld(context.Background(), &interview.HelloWorldRequest{})
+func GetConsumer() *consumer {
+	return instance
+}
+
+func (s *consumer) HelloWorld(ctx context.Context, req *interview.HelloWorldRequest) (*interview.HelloWorldResponse, error) {
+	resp, err := s.Client.HelloWorld(ctx, req)
 	if err != nil {
-		log.Fatalln(errors.Wrap(err, "failed to hello world"))
+		log.Println(errors.Wrap(err, "failed to execute HelloWorld"))
+		return nil, err
 	}
 	fmt.Println(resp)
+	return resp, nil
 }
