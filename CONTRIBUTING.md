@@ -41,7 +41,7 @@ There's no restriction on languages, frameworks, or tools. However, do limit any
 Run the setup script to generate protobuf stubs.
 
 ```sh
-./setup.sh
+make setup
 ```
 
 ## Workflow
