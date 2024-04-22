@@ -32,9 +32,9 @@ func LoadConfig() *Config {
 		log.Fatalf("Error reading config file, %s", err)
 	}
 
-	grpcConfig := &GrpcConfig{}
-	if err := viper.Sub("grpc").Unmarshal(grpcConfig); err != nil {
-		log.Fatalf("Error unmarshalling grpc config: %s", err)
+	grpcConfig := &GrpcConfig{
+		UnsecurePort: viper.GetString("grpc.unsecure_port"),
+		ServerHost:   viper.GetString("grpc.server_host"),
 	}
 
 	return &Config{

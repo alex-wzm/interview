@@ -22,9 +22,9 @@ import (
 func main() {
 
 	cfg := config.LoadConfig()
-
 	address := fmt.Sprintf("%s:%s", cfg.Grpc.ServerHost, cfg.Grpc.UnsecurePort)
 
+	fmt.Println(address)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)

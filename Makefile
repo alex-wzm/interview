@@ -9,3 +9,7 @@ gen: setup
 .PHONY: run-service
 run-service: gen
 	$(MAKE) -C service-go run-service
+
+.PHONY: run-client
+run-client: gen
+	$(MAKE) -C client-go run-client
