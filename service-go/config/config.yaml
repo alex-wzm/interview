@@ -1,0 +1,4 @@
+jwt: cJGZ8L1sDcPezjOy1zacPJZxzZxrPObm2Ggs1U0V+fE=INSECURE
+grpc:
+  server_host: localhost
+  unsecure_port: 8080

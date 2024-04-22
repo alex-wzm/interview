@@ -3,12 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"log"
 	"net"
 
-	config "interview-service/config"
+	"interview-service/config"
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
 	jwt "interview-service/internal/domain/jwt"
@@ -22,16 +21,15 @@ import (
 
 func main() {
 
-	grpcConfig := config.LoadConfigFromFile(configPath)
-
-	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+	cfg := config.LoadConfig()
+	address := fmt.Sprintf("%s:%s", cfg.Grpc.ServerHost, cfg.Grpc.UnsecurePort)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
+	var jwtSecret = cfg.JwtSecret
 
 	if jwtSecret == "" {
 		log.Fatalf("error loading secret from envoirnment")

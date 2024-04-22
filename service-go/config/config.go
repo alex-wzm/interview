@@ -1,9 +1,10 @@
 package config
 
 import (
-	"encoding/json"
 	"log"
-	"os"
+	"strings"
+
+	"github.com/spf13/viper"
 )
 
 type (
@@ -11,18 +12,33 @@ type (
 		ServerHost   string `json:"server_host" default:"localhost"`
 		UnsecurePort string `json:"unsecure_port" default:"8080"`
 	}
+	Config struct {
+		Grpc      *GrpcConfig
+		JwtSecret string
+	}
 )
 
-func LoadConfigFromFile(path string) *GrpcConfig {
-	var cfg GrpcConfig
-	val, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalln("error reading file", err)
+func LoadConfig() *Config {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.AddConfigPath("./config")
+
+	// Set up to automatically read configuration from environment variables
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatalf("Error reading config file, %s", err)
 	}
 
-	if unMarErr := json.Unmarshal(val, &cfg); unMarErr != nil {
-		log.Fatalln("error during unmarshal", err)
+	grpcConfig := &GrpcConfig{
+		UnsecurePort: viper.GetString("grpc.unsecure_port"),
+		ServerHost:   viper.GetString("grpc.server_host"),
 	}
 
-	return &cfg
+	return &Config{
+		Grpc:      grpcConfig,
+		JwtSecret: viper.GetString("jwt"),
+	}
 }
