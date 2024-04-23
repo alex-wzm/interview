@@ -3,21 +3,22 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"interview-service/internal/logger"
+	"interview-authserver/internal/logger"
 	"os"
 )
 
 type (
 	GrpcConfig struct {
 		ServerHost   string `json:"server_host" default:"localhost"`
-		UnsecurePort string `json:"unsecure_port" default:"8080"`
+		UnsecurePort string `json:"unsecure_port" default:"8081"`
 	}
 
 	EnvConfig struct {
-		JwtSecret string
-		Admin     string
-		Host      string
-		Port      string
+		JwtSecret  string
+		Username   string
+		Usersecret string
+		Host       string
+		Port       string
 	}
 )
 
@@ -41,9 +42,14 @@ func LoadEnv() *EnvConfig {
 		logger.LogError(fmt.Errorf("failed to read JWT_SECRET from environment"), true)
 	}
 
-	username := os.Getenv("ADMIN")
+	username := os.Getenv("USER_NAME")
 	if username == "" {
 		logger.LogError(fmt.Errorf("failed to read USER_NAME from environment"), true)
+	}
+
+	usersercret := os.Getenv("USER_SECRET")
+	if usersercret == "" {
+		logger.LogError(fmt.Errorf("failed to read USER_SECRET from environment"), true)
 	}
 
 	host := os.Getenv("HOST")
@@ -57,9 +63,10 @@ func LoadEnv() *EnvConfig {
 	}
 
 	return &EnvConfig{
-		JwtSecret: jwtSecret,
-		Admin:     username,
-		Host:      host,
-		Port:      port,
+		JwtSecret:  jwtSecret,
+		Username:   username,
+		Usersecret: usersercret,
+		Host:       host,
+		Port:       port,
 	}
 }

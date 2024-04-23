@@ -2,52 +2,54 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+
+	"interview-client/config"
 	"interview-client/internal/consumer"
-	"log"
-	"os"
+	"interview-client/internal/logger"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-type config struct {
-	Server string `json:"Server"`
-}
+func makeAuthCall(env *config.EnvConfig) *grpc.ClientConn {
+	ctx := context.Background()
+	authconn, err := grpc.DialContext(
+		ctx,
+		env.Authserver,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock(),
+	)
 
-func loadConfig() (c config) {
-	f, err := os.Open("./configs/local.json")
-	defer f.Close()
 	if err != nil {
-		log.Fatalln("failed to open config file: ", err)
+		logger.LogError(errors.Wrap(err, "failed to connect to authserver"), true)
 	}
 
-	decoder := json.NewDecoder(f)
-	err = decoder.Decode(&c)
-	if err != nil {
-		log.Fatalln("failed to decode config file: ", err)
-	}
-
-	return c
+	return authconn
 }
 
 func main() {
 	ctx := context.Background()
+	env := config.LoadEnv()
 
-	config := loadConfig()
-
-	conn, err := grpc.DialContext(
+	apiconn, err := grpc.DialContext(
 		ctx,
-		config.Server,
+		env.Apiserver,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
 	if err != nil {
-		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
+		logger.LogError(errors.Wrap(err, "failed to connect to service"), true)
 	}
 
-	consumer := consumer.New(conn)
+	authconn := makeAuthCall(env)
+	defer func() {
+		apiconn.Close()
+		authconn.Close()
+	}()
 
+	consumer := consumer.New(apiconn, authconn)
+	logger.LogInfo("authenticating and dialing service")
+	consumer.Authenticate(ctx, env)
 	consumer.HelloWorld(ctx)
 }

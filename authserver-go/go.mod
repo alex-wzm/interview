@@ -1,4 +1,4 @@
-module interview-service
+module interview-authserver
 
 go 1.19
 

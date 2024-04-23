@@ -1,45 +1,39 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"os"
-
 	"log"
 	"net"
 
 	config "interview-service/config"
 	"interview-service/internal/api"
+	"interview-service/internal/api/auth"
 	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
+	"interview-service/internal/logger"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func main() {
 
-	grpcConfig := config.LoadConfigFromFile(configPath)
+	//grpcConfig := config.LoadConfigFromFile(configPath)
+	env := config.LoadEnv()
 
-	address := fmt.Sprintf("%s:%s", grpcConfig.ServerHost, grpcConfig.UnsecurePort)
+	address := fmt.Sprintf("%s:%s", env.Host, env.Port)
 
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.LogError(fmt.Errorf("failed to listen: %v", err), true)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
-
-	if jwtSecret == "" {
-		log.Fatalf("error loading secret from envoirnment")
-	}
+	authHelper := auth.New(env)
 
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
+		grpc.ChainUnaryInterceptor(
+			grpc_auth.UnaryServerInterceptor(authHelper.ValidateJWT()),
+			grpc_auth.UnaryServerInterceptor(authHelper.AuthorizeRequest()),
 		),
 	}
 
@@ -54,28 +48,5 @@ func main() {
 }
 
 const (
-	authHeader = "authorization"
 	configPath = "./config/grpc.json"
 )
-
-// validateJWT parses and validates a bearer jwt
-//
-// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
-
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			log.Default().Println(err)
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
-
-		ctx = context.WithValue(ctx, authHeader, claims)
-
-		return ctx, nil
-	}
-}

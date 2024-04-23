@@ -3,3 +3,5 @@ go 1.19
 use ./service-go
 
 use ./client-go
+
+use ./authserver-go

@@ -1,0 +1,29 @@
+version: '3'
+services:
+  authserver:
+    image: jhawk7/interview-project-authserver:latest
+    build:
+      context: ./authserver-go
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./authserver-go/env/.env
+    ports:
+      - "8081:8081"
+
+  api-service:
+    image: jhawk7/interview-project-service:latest
+    build:
+      context: ./service-go
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./service-go/env/.env
+    ports:
+      - "8080:8080"
+
+  client:
+    image: jhawk7/interview-project-client:latest
+    build:
+      context: ./client-go
+      dockerfile: ./Dockerfile
+    env_file:
+      - ./client-go/env/.env
