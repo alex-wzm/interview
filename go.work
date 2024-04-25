@@ -1,5 +1,6 @@
-go 1.19
+go 1.22
 
-use ./service-go
-
-use ./client-go
+use (
+    ./service-go
+    ./client-go
+)

@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"interview-client/internal/consumer"
+	"interview-client/internal/jwt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 )
 
 type config struct {
@@ -36,6 +39,16 @@ func main() {
 	ctx := context.Background()
 
 	config := loadConfig()
+
+	username := "someuser"
+
+	duration, _ := time.ParseDuration("10h")
+	jwtToken, err := jwt.GenerateToken(username, duration, []byte("secret"))
+	if err != nil {
+		log.Default().Println("GenerateToken error: " + err.Error())
+	}
+	md := metadata.Pairs("Authorization", "Bearer "+jwtToken)
+	ctx = metadata.NewOutgoingContext(ctx, md)
 
 	conn, err := grpc.DialContext(
 		ctx,
