@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
 
@@ -11,13 +10,11 @@ import (
 	config "interview-service/config"
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
+	"interview-service/internal/auth"
 
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -36,11 +33,11 @@ func main() {
 	if jwtSecret == "" {
 		log.Fatalf("error loading secret from envoirnment")
 	}
+	auth := auth.NewAuth(authHeader, []byte(jwtSecret))
 
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
-		),
+			grpc_auth.UnaryServerInterceptor(auth.ValidateJWT())),
 	}
 
 	grpcServer := grpc.NewServer(opts...)
@@ -61,21 +58,21 @@ const (
 // validateJWT parses and validates a bearer jwt
 //
 // TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
+// func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
+// 	return func(ctx context.Context) (context.Context, error) {
+// 		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			log.Default().Println(err)
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
+// 		claims, err := jwt.ValidateToken(token, secret)
+// 		if err != nil {
+// 			log.Default().Println(err)
+// 			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
+// 		}
 
-		ctx = context.WithValue(ctx, authHeader, claims)
+// 		ctx = context.WithValue(ctx, authHeader, claims)
 
-		return ctx, nil
-	}
-}
+// 		return ctx, nil
+// 	}
+// }
