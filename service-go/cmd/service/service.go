@@ -31,7 +31,7 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
+	var jwtSecret = os.Getenv("JWT_SECRET") //what is this secret?
 
 	if jwtSecret == "" {
 		log.Fatalf("error loading secret from envoirnment")
