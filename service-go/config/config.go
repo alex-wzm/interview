@@ -8,8 +8,10 @@ import (
 
 type (
 	GrpcConfig struct {
-		ServerHost   string `json:"server_host" default:"localhost"`
-		UnsecurePort string `json:"unsecure_port" default:"8080"`
+		ServerHost      string `json:"server_host"`
+		UnsecurePort    string `json:"unsecure_port" default:"8085"`
+		ResultProjectID string `json:"result_project_id" default:"my-project-id"`
+		ResultTopicID   string `json:"result_topic_id"`
 	}
 )
 

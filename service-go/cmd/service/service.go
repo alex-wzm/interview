@@ -45,7 +45,7 @@ func main() {
 
 	grpcServer := grpc.NewServer(opts...)
 
-	interview.RegisterInterviewServiceServer(grpcServer, api.New())
+	interview.RegisterInterviewServiceServer(grpcServer, api.New(grpcConfig.ResultProjectID, grpcConfig.ResultTopicID))
 	reflection.Register(grpcServer)
 
 	log.Printf("Starting interview service at %s", address)

@@ -1,3 +1,10 @@
 {
-  "Server": "127.0.0.1:8080"
+  "server": "localhost:8085",
+  "result_project_id": "my-project-id",
+  "result_topic_id": "helloworld_result.json",
+  "result_sub_id": "helloworld_result.json-sub",
+  "result_num_goroutines": 2,
+  "username": "test-user",
+  "request_interval_ms": 1000,
+  "publish_delay_max_ms": 1000
 }
