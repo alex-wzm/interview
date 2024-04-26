@@ -1,5 +1,6 @@
 {
-    "server_host": "127.0.0.1",
-    "unsecure_port": "8080"
+    "server_host": "",
+    "unsecure_port": "8085",
+    "result_project_id": "my-project-id",
+    "result_topic_id": "helloworld_result.json"
 }
-  

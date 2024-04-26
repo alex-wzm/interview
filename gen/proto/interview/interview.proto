@@ -8,6 +8,7 @@ service InterviewService {
 
 message HelloWorldRequest {
 	string Name = 1;
+	int32 PublishDelayMS = 2;
 }
 
 message HelloWorldResponse {

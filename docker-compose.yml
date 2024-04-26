@@ -1,0 +1,43 @@
+version: '2.0'
+services:
+  interview-service:
+    container_name: "interview-service"
+    build:
+      context: "service-go"
+      dockerfile: "Dockerfile"
+    environment:
+      - PUBSUB_EMULATOR_HOST=emulator:8681
+      - PUBSUB_PROJECT_ID=my-project-id
+    depends_on:
+      - "emulator"
+    env_file:
+      - ./service-go/env/local.env
+    ports:
+      - "8085:8085"
+    command:
+      ./service
+
+#  Didn't have enough time to configure compose network for host access to service container
+#  interview-client:
+#    container_name: "interview-client"
+#    build:
+#      context: "client-go"
+#      dockerfile: "Dockerfile"
+#    environment:
+#      - PUBSUB_EMULATOR_HOST=emulator:8681
+#      - PUBSUB_PROJECT_ID=my-project-id
+#    depends_on:
+#      - "interview-service"
+#      - "emulator"
+#    env_file:
+#      - ./client-go/env/local.env
+#    command:
+#      ./client
+
+  emulator:
+    image: thekevjames/gcloud-pubsub-emulator:406.0.0
+    container_name: "emulator"
+    environment:
+      - PUBSUB_PROJECT1=my-project-id,helloworld_result.json:helloworld_result.json-sub
+    ports:
+      - 8681:8681
