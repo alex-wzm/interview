@@ -1,11 +1,12 @@
-module interview-client
+module authservice-go
 
 go 1.21
 
 require (
+	github.com/caarlos0/env/v11 v11.0.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
-	github.com/caarlos0/env/v11 v11.0.0
 )
 
 require (

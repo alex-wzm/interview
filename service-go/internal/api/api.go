@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-
+	"fmt"
 	"interview-service/internal/api/interview"
 	"interview-service/internal/domain/greeter"
 )
@@ -16,9 +16,13 @@ func New() *server {
 }
 
 func (s *server) HelloWorld(ctx context.Context, r *interview.HelloWorldRequest) (*interview.HelloWorldResponse, error) {
-	greeting := greeter.Greet(r.GetName())
+	username, ok := ctx.Value("username").(string)
+	// ensure the value from the context is our expected data type
+	if !ok {
+		return &interview.HelloWorldResponse{}, fmt.Errorf("unexpected error occured when retrieving username from context")
+	}
 
 	return &interview.HelloWorldResponse{
-		Greeting: greeting,
+		Greeting: greeter.Greet(username),
 	}, nil
 }

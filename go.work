@@ -1,5 +1,8 @@
-go 1.19
+go 1.21
 
-use ./service-go
+use (
+	./service-go
+	./authservice-go
+	./client-go
+)
 
-use ./client-go

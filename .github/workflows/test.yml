@@ -1,0 +1,30 @@
+name: Test project
+
+# could restrict when this workflow runs more but in the early stage we will build on every commit
+on: [push]
+
+jobs:
+  test:
+    runs-on: self-hosted
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: Generate
+        run: make setup
+
+      # revive will lint the Go application code to ensure we are using best practices
+      - name: Run Revive Action by pulling pre-built image
+        uses: docker://morphy/revive-action:v2
+
+      - name: Test
+        run: make go-test
+
+      # We want to make sure the normal binaries are able to be built to check any errors
+      - name: Build
+        run: make go-build

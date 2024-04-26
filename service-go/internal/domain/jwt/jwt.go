@@ -1,72 +1,40 @@
-package jwtValidator
+package jwt
 
 import (
-	"errors"
-	"github.com/dgrijalva/jwt-go"
-	"time"
+	"context"
+	"fmt"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	"google.golang.org/grpc"
+	"interview-service/internal/api/auth"
 )
 
-// JWTClaims represents the custom claims for our JWT
-type JWTClaims struct {
-	Username string `json:"username"`
-	jwt.StandardClaims
+type Validator struct {
+	auth.UnimplementedAuthServiceServer
+	client auth.AuthServiceClient
 }
 
-type JWTlib interface {
-	GenerateToken(username string, expiresIn time.Duration, secret []byte) (string, error)
-	ValidateToken(tokenString string, secret []byte) (*JWTClaims, error)
-}
-
-var ErrInvalidToken = errors.New("invalid token")
-
-// GenerateToken generates a JWT token with the provided username and expiration time
-func GenerateToken(username string, expiresIn time.Duration, secret []byte) (string, error) {
-	// Create a new token object
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	// Set the claims for the token
-	claims := JWTClaims{
-		username,
-		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(expiresIn).Unix(),
-			IssuedAt:  time.Now().Unix(),
-		},
+func New(c *grpc.ClientConn) *Validator {
+	return &Validator{
+		client: auth.NewAuthServiceClient(c),
 	}
-	token.Claims = claims
-
-	// Sign the token with the provided secret
-	tokenString, err := token.SignedString(secret)
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
 
-// ValidateToken validates a JWT token with the provided secret and returns the claims
-func ValidateToken(tokenString string, secret []byte) (*JWTClaims, error) {
-	// Parse the token
-	token, err := jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing method
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, jwt.ErrSignatureInvalid
+func (v *Validator) ValidateJWT() func(ctx context.Context) (context.Context, error) {
+	return func(ctx context.Context) (context.Context, error) {
+		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
+		if err != nil {
+			return nil, err
 		}
-		return secret, nil
-	})
-
-	// Check if the token is valid
-	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			return nil, ErrInvalidToken
+		resp, err := v.client.Validate(ctx, &auth.ValidateRequest{
+			Token: token,
+		})
+		if err != nil {
+			return nil, err
 		}
-		return nil, err
+		if !resp.Valid {
+			return nil, fmt.Errorf("provided token is invalid")
+		}
+		ctx = context.WithValue(ctx, "username", resp.Username)
+		return ctx, nil
 	}
-
-	// Extract the claims from the token
-	claims, ok := token.Claims.(*JWTClaims)
-	if !ok || !token.Valid {
-		return nil, ErrInvalidToken
-	}
-
-	return claims, nil
 }

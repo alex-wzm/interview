@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "📁 Removing generated files:"
 
-rm -v -f ./client-go/internal/api/interview/*pb.go
-
-rm -v -f ./service-go/internal/api/interview/*pb.go
+rm -vf ./client-go/internal/api/**/*pb.go
+rm -vf ./service-go/internal/api/**/*pb.go
+rm -vf ./authservice-go/internal/api/**/*pb.go
 
 echo "🏁 Generated files removed"
