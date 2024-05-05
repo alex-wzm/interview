@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"interview-client/internal/consumer"
 	"log"
@@ -9,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/credentials"
 )
 
 type config struct {
@@ -36,13 +37,17 @@ func main() {
 	ctx := context.Background()
 
 	config := loadConfig()
+	// Verify the server cert is in prod.
+	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	creds := credentials.NewTLS(tlsConfig)
 
 	conn, err := grpc.DialContext(
 		ctx,
 		config.Server,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(creds),
 		grpc.WithBlock(),
 	)
+
 	if err != nil {
 		log.Fatalln(errors.Wrap(err, "failed to connect to service"))
 	}
