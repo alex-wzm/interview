@@ -1,9 +1,8 @@
 package main
 
 import (
-	"context"
+	"crypto/tls"
 	"fmt"
-	"os"
 
 	"log"
 	"net"
@@ -11,13 +10,14 @@ import (
 	config "interview-service/config"
 	"interview-service/internal/api"
 	"interview-service/internal/api/interview"
-	jwt "interview-service/internal/domain/jwt"
 
-	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
-	"google.golang.org/grpc/status"
+)
+
+const (
+	configPath = "./config/grpc.json"
 )
 
 func main() {
@@ -31,16 +31,13 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	var jwtSecret = os.Getenv("JWT_SECRET")
-
-	if jwtSecret == "" {
-		log.Fatalf("error loading secret from envoirnment")
+	tlsCert, err := tls.LoadX509KeyPair("../certs/server-crt.pem", "../certs/server-key.pem")
+	if err != nil {
+		log.Fatalf("failed to load server TLS certificate: %v", err)
 	}
 
 	opts := []grpc.ServerOption{
-		grpc.UnaryInterceptor(
-			grpc_auth.UnaryServerInterceptor(validateJWT([]byte(jwtSecret))),
-		),
+		grpc.Creds(credentials.NewServerTLSFromCert(&tlsCert)),
 	}
 
 	grpcServer := grpc.NewServer(opts...)
@@ -51,31 +48,4 @@ func main() {
 	log.Printf("Starting interview service at %s", address)
 	grpcServer.Serve(lis)
 
-}
-
-const (
-	authHeader = "authorization"
-	configPath = "./config/grpc.json"
-)
-
-// validateJWT parses and validates a bearer jwt
-//
-// TODO: move to own package (in ./internal/api/auth) using a constructor that privately sets the secret
-func validateJWT(secret []byte) func(ctx context.Context) (context.Context, error) {
-	return func(ctx context.Context) (context.Context, error) {
-		token, err := grpc_auth.AuthFromMD(ctx, "bearer")
-		if err != nil {
-			return nil, err
-		}
-
-		claims, err := jwt.ValidateToken(token, secret)
-		if err != nil {
-			log.Default().Println(err)
-			return nil, status.Errorf(codes.Unauthenticated, "invalid auth token: %v", err)
-		}
-
-		ctx = context.WithValue(ctx, authHeader, claims)
-
-		return ctx, nil
-	}
 }
